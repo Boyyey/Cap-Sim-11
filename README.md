@@ -319,14 +319,6 @@ We welcome contributions from the global electronics and software community:
 - 🔧 **Code Contributions**: Pull requests welcome!
 - 📚 **Documentation**: Help improve our guides and tutorials
 
-### **Contributors**
-<div align="center">
-
-[![Contributors](https://contrib.rocks/image?repo=your-username/capacitor-simulator)]()
-
-*Thank you to all contributors who help advance capacitor simulation technology!*
-
-</div>
 ---
 
 <div align="center">
