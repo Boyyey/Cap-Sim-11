@@ -3,9 +3,52 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from ctypes import CDLL, Structure, c_double, c_char, c_char_p, c_int, POINTER
 import os
+from ctypes import CDLL, Structure, c_double, c_char, c_char_p, c_int, POINTER
 from capacitor_simulator import get_simulator
+# Capacitor information dictionary with Persian explanations and image paths
+capacitor_info = {
+    "Ceramic": {
+        "history": "اولین خازن‌های سرامیکی در دهه ۱۹۵۰ ساخته شدند. این خازن‌ها به دلیل هزینه پایین و اندازه کوچک به سرعت در صنعت الکترونیک محبوب شدند و نقش مهمی در توسعه مدارهای مدرن ایفا کردند.",
+        "applications": "در مدارهای الکترونیکی به عنوان خازن‌های فیلتر و کوپلینگ استفاده می‌شوند. این خازن‌ها معمولاً در مدارهای RF، صوتی، و دیجیتال به کار می‌روند و برای حذف نویز و اتصال سیگنال‌ها بین مراحل مختلف مدار ضروری هستند.",
+        "why_exists": "به دلیل نیاز به خازن‌هایی با ظرفیت بالا در حجم کوچک و قیمت مناسب، خازن‌های سرامیکی طراحی شدند تا جایگزینی مقرون‌به‌صرفه برای خازن‌های سنتی باشند و در تجهیزات الکترونیکی کوچک جای بگیرند.",
+        "pros": "ظرفیت بالا نسبت به اندازه، قیمت مناسب، پایداری خوب در دماهای مختلف، و مقاومت بالا در برابر ارتعاشات.",
+        "cons": "حساس به دما و ولتاژ، ممکن است در ولتاژهای بالا دچار شکست شوند، و ظرفیت آن‌ها می‌تواند با تغییرات دما تغییر کند.",
+        "image": "../assets/ceramic-capacitor.webp"
+    },
+    "Electrolytic": {
+        "history": "خازن‌های الکترولیتی در دهه ۱۹۲۰ معرفی شدند و به سرعت در بازار الکترونیک جا افتادند. این خازن‌ها تحول بزرگی در ذخیره انرژی الکتریکی ایجاد کردند و پایه‌گذار منابع تغذیه مدرن شدند.",
+        "applications": "در منابع تغذیه، مدارهای DC، و سیستم‌های ذخیره انرژی استفاده می‌شوند. آن‌ها برای صاف کردن ولتاژ و ذخیره انرژی در مدارهای الکترونیکی بزرگ مانند آمپلی‌فایرها و تجهیزات صنعتی ضروری هستند.",
+        "why_exists": "برای تأمین نیاز به ظرفیت بالا در حجم کوچک و قیمت مناسب طراحی شدند، تا بتوانند انرژی زیادی را در فضاهای محدود ذخیره کنند و در تجهیزات الکترونیکی بزرگ استفاده شوند.",
+        "pros": "ظرفیت بسیار بالا، قیمت مناسب برای ظرفیت‌های بزرگ، و عملکرد خوب در ولتاژهای پایین.",
+        "cons": "حساس به قطبیت (باید با جهت درست نصب شوند)، عمر محدود (معمولاً ۱۰۰۰ تا ۵۰۰۰ ساعت)، و ممکن است در دماهای بالا نشت کنند یا منفجر شوند.",
+        "image": "../assets/electrolytic-capacitor.png"
+    },
+    "Film": {
+        "history": "خازن‌های فیلمی در دهه ۱۹۶۰ به بازار آمدند و به دلیل کیفیت بالا به سرعت محبوب شدند. این خازن‌ها از مواد پلاستیکی ساخته شدند و استاندارد جدیدی برای ثبات و دقت ایجاد کردند.",
+        "applications": "در مدارهای صوتی، فیلترها، و تجهیزات پزشکی استفاده می‌شوند. آن‌ها برای مدارهای حساس که نیاز به دقت بالا دارند، مانند فیلترهای صوتی و تجهیزات اندازه‌گیری، ایده‌آل هستند.",
+        "why_exists": "برای ارائه ثبات و کیفیت بالا در مدارهای حساس طراحی شدند، جایی که تغییرات کوچک در ظرفیت می‌تواند عملکرد سیستم را تحت تأثیر قرار دهد.",
+        "pros": "پایداری عالی، عدم حساسیت به دما، عمر طولانی، و عملکرد خوب در فرکانس‌های بالا.",
+        "cons": "ظرفیت پایین‌تر نسبت به خازن‌های الکترولیتی، قیمت بالاتر، و اندازه بزرگ‌تر برای ظرفیت‌های مشابه.",
+        "image": "../assets/film-capacitor.jpg"
+    },
+    "Tantalum": {
+        "history": "خازن‌های تانتالی در دهه ۱۹۵۰ معرفی شدند و به سرعت در بازار الکترونیک جا افتادند. این خازن‌ها از فلز تانتالم ساخته شدند و برای کاربردهای خاص طراحی شدند.",
+        "applications": "در مدارهای RF، فیلترها، و تجهیزات هوافضا استفاده می‌شوند. آن‌ها برای مدارهای حساس و کوچک مانند تلفن‌های همراه و تجهیزات پزشکی ضروری هستند.",
+        "why_exists": "برای ارائه ظرفیت بالا در اندازه کوچک طراحی شدند، تا بتوانند در تجهیزات الکترونیکی کوچک و حساس استفاده شوند و عملکرد بالایی ارائه دهند.",
+        "pros": "پایداری بالا، اندازه کوچک، و عملکرد خوب در ولتاژهای بالا.",
+        "cons": "قیمت بالا، حساس به ولتاژ (ممکن است در صورت اضافه‌ولتاژ بسوزند)، و نیاز به مراقبت در نصب.",
+        "image": "../assets/tantalum-capacitor.jpg"
+    },
+    "Mica": {
+        "history": "خازن‌های میکا از اوایل قرن ۲۰ استفاده می‌شدند و به دلیل دقت بالا محبوب شدند. این خازن‌ها از ورقه‌های میکا ساخته شدند و پایه‌گذار خازن‌های دقیق شدند.",
+        "applications": "در مدارهای RF، فیلترهای دقیق، و تجهیزات اندازه‌گیری استفاده می‌شوند. آن‌ها برای مدارهایی که نیاز به دقت بالا دارند، مانند رادارها و تجهیزات ارتباطی، ضروری هستند.",
+        "why_exists": "برای ارائه دقت بالا و پایداری طراحی شدند، جایی که حتی کوچک‌ترین تغییرات در ظرفیت می‌تواند مشکل‌ساز باشد.",
+        "pros": "پایداری فوق‌العاده، دقت بالا، و عملکرد خوب در دماهای مختلف.",
+        "cons": "قیمت بالاتر، ظرفیت پایین، و اندازه بزرگ‌تر برای ظرفیت‌های مشابه.",
+        "image": "../assets/mica-capacitor.png"
+    }
+}
 
 # Load capacitor specifications
 @st.cache_data
@@ -21,6 +64,40 @@ class CapacitorStruct(Structure):
         ("leakage", c_double),
         ("temp_coeff", c_double)
     ]
+
+def display_capacitor_info(capacitor_type):
+    """Display Persian information and image for the selected capacitor type"""
+    if capacitor_type in capacitor_info:
+        info = capacitor_info[capacitor_type]
+        
+        # Display image
+        image_path = info["image"]
+        if os.path.exists(image_path):
+            st.image(image_path, caption=f"تصویر خازن {capacitor_type}", use_column_width=True)
+        else:
+            st.warning(f"تصویر برای خازن {capacitor_type} یافت نشد.")
+        
+        # Display information in an organized layout
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown(f"### تاریخچه")
+            st.write(info["history"])
+            
+            st.markdown(f"### کاربردها")
+            st.write(info["applications"])
+        
+        with col2:
+            st.markdown(f"### چرا وجود دارند")
+            st.write(info["why_exists"])
+            
+            st.markdown(f"### مزایا")
+            st.write(info["pros"])
+            
+            st.markdown(f"### معایب")
+            st.write(info["cons"])
+    else:
+        st.error(f"اطلاعات برای خازن {capacitor_type} موجود نیست.")
 
 def main():
     st.title("⚡ Capacitor Behavior Simulator")
@@ -109,7 +186,7 @@ def main():
     st.header("Simulation Results")
 
     # Create tabs for different visualizations
-    tab1, tab2, tab3, tab4 = st.tabs(["Charge/Discharge Curve", "Energy Analysis", "Temperature Effects", "3D Analysis"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Charge/Discharge Curve", "Energy Analysis", "Temperature Effects", "3D Analysis", "اطلاعات/Info"])
 
     with tab1:
         st.subheader("Charge and Discharge Behavior")
@@ -126,6 +203,10 @@ def main():
     with tab4:
         st.subheader("Advanced 3D Analysis")
         simulate_3d_analysis(cap_data, resistance, voltage, temperature, time_steps, simulator, c_library_available)
+
+    with tab5:
+        st.subheader("اطلاعات خازن / Capacitor Information")
+        display_capacitor_info(capacitor_type)
 
 def simulate_charge_discharge(cap_data, resistance, voltage, temperature, time_steps, simulator, c_library_available):
     C = cap_data['Capacitance (µF)'] * 1e-6  # Convert to Farads
