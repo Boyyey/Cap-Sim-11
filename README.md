@@ -327,25 +327,11 @@ We welcome contributions from the global electronics and software community:
 *Thank you to all contributors who help advance capacitor simulation technology!*
 
 </div>
-
-## 📞 **SUPPORT & COMMUNICATION**
-
-### **Help Channels**
-- 📧 **Email**: support@capacitor-simulator.dev
-- 💬 **Discord**: [Join our community](https://discord.gg/capacitor-sim)
-- 🐦 **Twitter**: [@CapacitorSim](https://twitter.com/CapacitorSim)
-- 📖 **Wiki**: [Comprehensive documentation](https://wiki.capacitor-simulator.dev)
-
-### **Troubleshooting**
-- **Common Issues**: Check our [FAQ](https://wiki.capacitor-simulator.dev/faq)
-- **Installation Problems**: See [Setup Guide](https://wiki.capacitor-simulator.dev/setup)
-- **Performance Issues**: [Optimization Guide](https://wiki.capacitor-simulator.dev/performance)
-
 ---
 
 <div align="center">
 
-**Made with ❤️ by AmirHosseinRasti**
+**Made with ❤️ by boyyey**
 
 **"Simulating the invisible forces that power our digital world"**
 
